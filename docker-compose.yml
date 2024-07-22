@@ -1,0 +1,92 @@
+version: '3.8'
+services:
+  db_postgres:
+    image: postgres:16.2-bookworm
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=15243
+      - PGUSER=root
+    command: [ "postgres", "-c", "config_file=/etc/postgresql.conf" ]
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "root" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./configs/postgres/init:/docker-entrypoint-initdb.d
+      - ./configs/postgres/postgresql.conf:/etc/postgresql.conf
+    networks:
+      - intranet
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - intranet
+
+
+  kratos-migrate:
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+    image: oryd/kratos:v1.1.0
+    volumes:
+      - ./configs/ory/kratos:/etc/config/kratos
+    command: -c /etc/config/kratos/config.yml migrate sql -e --yes
+    networks:
+      - intranet
+
+  kratos:
+    depends_on:
+      - kratos-migrate
+    image: oryd/kratos:v1.1.0
+    ports:
+      - '4433:4433' # public
+      - '4434:4434' # admin
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=trace
+    command: serve -c /etc/config/kratos/config.yml --dev --watch-courier
+    volumes:
+      - ./configs/ory/kratos:/etc/config/kratos
+    networks:
+      - intranet
+
+  fastapi:
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - intranet
+
+  nginx:
+    depends_on:
+      - fastapi
+      - kratos
+    image: nginx:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./configs/nginx:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt/live/fullchain.pem:/etc/nginx/ssl/fullchain.pem
+      - /etc/letsencrypt/live/privkey.pem:/etc/nginx/ssl/privkey.pem
+    networks:
+      - intranet
+
+networks:
+  intranet:
+    external: true

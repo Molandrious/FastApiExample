@@ -1,0 +1,230 @@
+[tool.poetry]
+name = "FastApiExample"
+package-mode = false
+authors = ["molandrious <molandrious@gmail.com>"]
+readme = "README.md"
+version = "0.9.1"
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_scheme = "semver2"
+version_provider = "poetry"
+update_changelog_on_bump = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.dependencies]
+python = "^3.12.0"
+aiobotocore = "^2.13.0"
+alembic = { extras = ["tz"], version = "^1.13.0" }
+asyncpg = "^0.29.0"
+celery = "^5.4.0"
+chardet = "^5.1.0"
+charset-normalizer = "^3.1.0"
+fastapi = { extras = ["all"], version = "^0.111" }
+fastapi-cache2 = { extras = ["redis"], version = "^0.2.1" }
+loguru = "~0.7.0"
+redis = "^4.6.0"
+orjson = "^3.10.3"
+ory-kratos-client = "1.1.0"
+phonenumbers = "^8.13.31"
+pillow = "^10.3.0"
+poetry-pre-commit-plugin = "^0.1.2"
+psycopg2 = "^2.9.6"
+pydantic = { extras = ["all"], version = "^2.6.2" }
+sentry-sdk = { extras = ["fastapi", "sqlalchemy"], version = "^2.2.0" }
+singleton-decorator = "^1.0.0"
+sqlalchemy = { extras = ["asyncio", "mypy"], version = "^2.0.0" }
+sqlalchemy-utils = "^0.41.2"
+transliterate = "^1.10.2"
+python-multipart = "^0.0.9"
+pendulum = "^3.0.0"
+toml = "^0.10.2"
+
+
+[tool.poetry.group.dev.dependencies]
+anyio = "^4.3.0"
+commitizen = "^3.27.0"
+epyxid = "^0.3.0"
+faker = "^24.11.0"
+respx = "^0.21.0"
+bandit = "^1.7.0"
+black = "^24.3.0"
+locust = "^2.27.0"
+mypy = "^1.10.0"
+pre-commit = "^3.6.0"
+psycopg = { extras = ["binary"], version = "^3.1.19" }
+pytest = "^8.2.0"
+pytest-anyio = "^0.0.0"
+pytest-asyncio = "^0.23.7"
+pytest-clarity = "^1.0.1"
+pytest-cov = "^5.0.0"
+pytest-postgresql = "^6.0.0"
+pytest-sugar = "^1.0.0"
+pytest-docker = "^3.1.1"
+pyupgrade = "^3.15.1"
+ruff = "^0.4.0"
+safety = "^3.1.0"
+types-redis = "^4.6.0.20240425"
+pytest-freezegun = "^0.4.2"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+pythonpath = "src"
+testpaths = "tests/units"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning"
+]
+addopts = "-vv -ss --tb=short" #  --alluredir allure-results
+asyncio_mode = "auto"
+
+
+[tool.mypy]
+python_version = 3.12  # Replace with your Python version
+mypy_path = "src"
+
+plugins = [
+    "pydantic.mypy",
+    "sqlalchemy.ext.mypy.plugin"
+]
+
+exclude = "^(postgres|tests)/$"
+
+warn_redundant_casts = true
+check_untyped_defs = true
+no_implicit_reexport = true
+disable_error_code = ["name-defined", "valid-type"]
+namespace_packages = true
+explicit_package_bases = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+
+[tool.black]
+line-length = 120
+skip-magic-trailing-comma = false
+skip-string-normalization = true
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | \.vscode
+  | \.idea
+)
+'''
+
+[tool.ruff]
+target-version = 'py312'
+line-length = 120
+src = ["src", "tests"]
+exclude = ["migrations", "pyproject.toml", "locust_profile.py", "tests"]
+
+lint.ignore = [
+    "ERA001",
+    "S101",
+    "SLF00",
+    "ISC001",
+    "RET504",
+    "S105",
+    "S106",
+    "RUF001",
+    "RUF003",
+    "PLR0913",
+    "TRY003",
+    "S311",
+    'COM819',
+    'B024',
+    'B008',
+    'COM812',
+    'I001',
+    'RUF100',
+]
+
+lint.select = [
+    "F", # Pyflakes
+    "E", # pycodestyle
+    "C90", # mccabe
+    "I", # isort
+    "N", # pep8-naming
+    #    "D", # pydocstyle
+    "UP", # pyupgrade
+    "YTT", # flake8-2020
+    #    "ANN", # flake8-annotations
+    "S", # flake8-bandit
+    # "BLE",  # flake8-blind-except
+    "FBT", # flake8-boolean-trap
+    "B", # flake8-bugbear
+    #   "A",  # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    # "DTZ",  # flake8-datetimez
+    "T10", # flake8-debugger
+    "EXE", # flake8-executable
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "G", # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "T20", # flake8-print
+    "PT", # flake8-pytest-style
+    #    "Q", # flake8-quotes
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "TCH", # flake8-type-checking
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "ERA", # eradicate
+    "PL", # Pylint
+    "TRY", # tryceratops
+    "RSE", # flake8-raise
+    "SLF", # flake8-self
+    "RUF", # Ruff-specific rules
+    "ASYNC", # flake8-async
+]
+
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.params.Depends",
+    "fastapi.Query",
+    "fastapi.params.Query",
+]
+
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "sqlalchemy.orm.DeclarativeBase"]
+runtime-evaluated-decorators = ["pydantic.validate_call", "attrs.define", "sqlalchemy.orm.declared_attr"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.isort]
+detect-same-package = true
+force-wrap-aliases = true
+combine-as-imports = true
+
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
